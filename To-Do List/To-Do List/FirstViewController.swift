@@ -15,10 +15,20 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBOutlet var tasksCompleted: UILabel!;
     @IBOutlet var completeTxt: UITextField!;
     @IBOutlet var completeButton: UIButton!;
+    var globalCount = 0;
+    //var imp_string: String = "";
+    var imp_num = 0;
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        var completion_reset_timer = NSTimer.scheduledTimerWithTimeInterval(86400, target: self, selector: Selector("resetCompletions"), userInfo: nil, repeats: true)
+    }
+    
+    
+    func resetCompletions(){
+        tasksCompleted.text = 0.stringValue;
     }
 
     override func didReceiveMemoryWarning() {
@@ -32,18 +42,30 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     @IBAction func btn_Completed (sender: UIButton){
-        var count = 0;
+        var count = 0
         for task in taskMGr.tasks{
             if(task.name == completeTxt.text){
+                //imp_string = task.name
+                //print(imp_string)
                 taskMGr.completedTasks.append(task);
-                taskMGr.tasks.removeAtIndex(count);
+                //globalCount = count
+                //taskMGr.tasks.removeAtIndex(count);
+                
                 
                 let count2 = taskMGr.completedTasks.count as NSNumber;
                 tasksCompleted.text = count2.stringValue;
                 completeTxt.text = "";
                 tblTasks.reloadData();
-            };count++;
-        }
+            }
+        };count++;
+        var timer = NSTimer.scheduledTimerWithTimeInterval(86400, target: self, selector: Selector("removeTask"), userInfo: nil, repeats: false)
+        
+    }
+    
+    func removeTask(){
+        taskMGr.tasks.removeAtIndex(imp_num)
+        viewWillAppear(true)
+        
     }
     
     //UITableViewDelete
@@ -73,9 +95,25 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         cell.textLabel?.text = taskMGr.tasks[indexPath.row].name
         
-        cell.detailTextLabel!.text = taskMGr.tasks[indexPath.row].desc
+        if find(taskMGr.tasks[indexPath.row], complete: taskMGr.completedTasks){
+            imp_num = indexPath.row
+            cell.detailTextLabel!.text = "Completed!"
+        }else{
+            cell.detailTextLabel!.text = taskMGr.tasks[indexPath.row].desc
+        }
+        
+        
         
         return cell
+    }
+    
+    func find(mytask: task, complete: [task]) -> Bool{
+        for currtask in complete{
+            if (currtask.name == mytask.name && currtask.desc == mytask.desc){
+                return true
+            }
+        }
+        return false
     }
     
     
